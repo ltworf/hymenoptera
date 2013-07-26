@@ -17,8 +17,10 @@
 # 
 # author Salvo "LtWorf" Tomaselli <tiposchi@tiscali.it>
 
+from itertools import *
 
 from enum import Enum
+from extraiter import *
 
 class Player(Enum):
     '''
@@ -53,6 +55,16 @@ In addition, one or more of the expansion pieces may be optionally added to the 
 class PlacingException(Exception):
     pass
 
+INITIAL_STANDARD = {
+    Piece.BEE : 1,
+    Piece.SPIDER : 2,
+    Piece.BEETLE : 2,
+    Piece.GRASSHOPPER : 3,
+    Piece.ANT : 3,
+}
+
+INITIAL_MOSQUITO = {Piece.MOSQUITO : 1}
+INITIAL_LADYBUG = {Piece.LADYBUG : 1}
 
 class Board(object):
     
@@ -62,12 +74,14 @@ class Board(object):
         self.turn = Player.WHITE
         
         self.unplayed = {} #Pieces that are out of the board for the moment
-        
-        self.played_turns = {} #Counts the number of played turns
-        
         self.unplayed[Player.WHITE] = dict(initial)
         self.unplayed[Player.BLACK] = dict(initial)
         
+        #Counts the number of played turns
+        self.played_turns = {
+            Player.WHITE: 0,
+            Player.BLACK: 0,
+        } 
         
     def get_cell(self,pos):
         '''
@@ -76,7 +90,7 @@ class Board(object):
         pos = (x,y)
         '''
         if pos in self.positions:
-            return self.positions
+            return self.positions[pos]
         else:
             return []
     
@@ -104,6 +118,9 @@ class Board(object):
         raise an exception.
         '''
         
+        if self.get_cell(pos) != []:
+            raise PlacingException('Cell occupied')
+        
         if player != self.turn:
             raise PlacingException('Wrong player')
         
@@ -116,25 +133,33 @@ class Board(object):
             if self.played_turns[player] == 4 and piece != Piece.BEE:
                 raise PlacingException('Bee needs to be placed')
         
-        if len(self.positions) > 0:
-            n = filter(lambda x: x is not None,map(self.get_player,get_adjacent(pos)))
+        if len(self.positions) > 1:
+            n = tee(filter(lambda x: x is not None,map(self.get_player,get_adjacent(pos))))
             
-            same = len(filter(lambda x: x == player))
-            diff = len(filter(lambda x: x != player))
+            same = iterlen(tuple(filter(lambda x: x == player,n[0])))
+            diff = iterlen(tuple(filter(lambda x: x != player,n[1])))
             
             if diff > 0 or same < 1:
                 raise PlacingException('Impossible location')
+        elif len(self.positions) == 1:
+            #1st black needs to touch white
+            n = tuple(filter(lambda x: x is not None,map(self.get_player,get_adjacent(pos))))
+            if iterlen(n) == 0:
+                raise PlacingException('Piece not placed next to another')
         
         # All checks out
         
         #Placing piece
-        self.positions[pos] = (piece,player)
+        self.positions[pos] = [(piece,player)]
         
         #Counting turn
         self.played_turns[player] += 1
         
         #Removing piece from pool
         self.unplayed[player][piece] -= 1
+        
+        #Changing player
+        self.turn = -player
 
 
     
@@ -146,9 +171,9 @@ def get_adjacent(pos):
     '''
     x,y=pos[0],pos[1]
     
-    return (x,y+1),
+    return ((x,y+1),
                (x,y-1),
                (x-1,y-1 if x%2==0 else y+1),
                (x-1,y),
                (x+1,y-1 if x%2==0 else y+1),
-               (x+1,y)
+               (x+1,y))
