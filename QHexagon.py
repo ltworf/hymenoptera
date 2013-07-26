@@ -32,11 +32,19 @@ class Hexagon(object):
     They can be added/removed to the QHexagon widget.
     '''
     def __init__(self):
-        self.bgcolor = 0xF00000
+        self.bgcolor = 0xB00000
         pass
+    
+    def getQColorbg(self):
+        r = (self.bgcolor & 0xFF0000) >> 16
+        g = (self.bgcolor & 0x00FF00) >> 8
+        b = self.bgcolor & 0x0000FF
+        return QtGui.QColor(r,g,b)
 
 
 class QHexagon(QtGui.QWidget):
+    
+    clicked = QtCore.pyqtSignal(int,int, name='clicked')
     
     def __init__(self):
         super(QHexagon, self).__init__()
@@ -65,8 +73,6 @@ class QHexagon(QtGui.QWidget):
         if miny < 0:
             self.voffset = -miny
         
-        print(self.hmax,self.vmax)
-    
     def addHexagon(self,h,x,y):
         self.hexagons[(x,y)] = h
         self._find_max_offset()
@@ -90,37 +96,37 @@ class QHexagon(QtGui.QWidget):
         
         return QtGui.QPolygon(p)
     
+    def mousePressEvent(self,ev):
+        #self.clicked.emit(x,y)
+        print (ev.x(),ev.y())
 
     def paintEvent(self, e):
-
         qp = QtGui.QPainter()
-        
-        
         
         qp.begin(self)
         qp.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
         
         # Deciding zoom
-        hradius = self.size().width() / self.hmax
-        vradius = self.size().height() / (self.vmax * 4.0 / 5.0)
+        hradius = self.size().width() / (self.hmax * 10.0 / 11.0)
+        vradius = self.size().height() / (self.vmax * 6.0 / 7.0)
         
         radius = float(min(hradius,vradius))/2
         apothem = math.sqrt(radius**2 - ((radius/2)**2))
         sside = math.sqrt((radius**2) - ( (apothem) **2))
         
-        print (radius,apothem,sside)
         
-        color = QtGui.QColor(0, 0, 0)
-        color.setNamedColor('#d4d4d4')
-        qp.setPen(color)
+        #color = QtGui.QColor(212, 212, 212)
+        #qp.setPen(color)
         
         for i in self.hexagons.keys():
             x,y=i
             x+=self.hoffset
             y+=self.voffset
             
-            #TODO stuff
-            qp.setBrush(QtGui.QColor(200, 0, 0))
+            
+            hexagon = self.hexagons[i]
+
+            qp.setBrush(hexagon.getQColorbg())
             
             if (y % 2 == 0):
                 x = x*apothem*2 + apothem
@@ -130,6 +136,8 @@ class QHexagon(QtGui.QWidget):
                 
                 y = y*radius*2+sside - ((y/2)*radius)
             
+            x+=radius/2
+            y+=radius/2
             h = self.hexagon(x,y,radius)
             qp.drawPolygon(h)
             
@@ -140,6 +148,8 @@ def main():
     
     
     e = Hexagon()
+    g = Hexagon()
+    g.bgcolor = 0xFFFFFF
     
     app = QtGui.QApplication(sys.argv)
     ex = QHexagon()
@@ -159,7 +169,7 @@ def main():
     ex.addHexagon(e,1,4)
     ex.addHexagon(e,1,5)
     
-    ex.addHexagon(e,-2,8)
+    ex.addHexagon(g,3,0)
     
     ex.show()
     sys.exit(app.exec_())
