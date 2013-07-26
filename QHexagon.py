@@ -32,6 +32,7 @@ class Hexagon(object):
     They can be added/removed to the QHexagon widget.
     '''
     def __init__(self):
+        self.bgcolor = 0xF00000
         pass
 
 
@@ -50,15 +51,21 @@ class QHexagon(QtGui.QWidget):
         
     def _find_max_offset(self):
         
-        #minx = self.hexagons.keys()[0]
+        minx = min(self.hexagons.keys(),key = lambda x: x[0])[0]
+        maxx = max(self.hexagons.keys(),key = lambda x: x[0])[0]
         
-        #miny
-        #maxx
-        #maxy
+        miny = min(self.hexagons.keys(),key = lambda x: x[1])[1]
+        maxy = max(self.hexagons.keys(),key = lambda x: x[1])[1]
         
-        #for x,y in self.hexagons.keys():
-            
-        pass
+        self.hmax = abs(maxx-minx)+1
+        self.vmax = abs(maxy-miny)+1
+        
+        if minx < 0:
+            self.hoffset = -minx
+        if miny < 0:
+            self.voffset = -miny
+        
+        print(self.hmax,self.vmax)
     
     def addHexagon(self,h,x,y):
         self.hexagons[(x,y)] = h
@@ -93,14 +100,9 @@ class QHexagon(QtGui.QWidget):
         qp.begin(self)
         qp.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
         
-        #TODO
-        hmax=3
-        vmax=8
-        
-        
         # Deciding zoom
-        hradius = self.size().width() / hmax
-        vradius = self.size().height() / vmax
+        hradius = self.size().width() / self.hmax
+        vradius = self.size().height() / (self.vmax * 4.0 / 5.0)
         
         radius = float(min(hradius,vradius))/2
         apothem = math.sqrt(radius**2 - ((radius/2)**2))
@@ -114,11 +116,11 @@ class QHexagon(QtGui.QWidget):
         
         for i in self.hexagons.keys():
             x,y=i
+            x+=self.hoffset
+            y+=self.voffset
             
             #TODO stuff
             qp.setBrush(QtGui.QColor(200, 0, 0))
-            
-            print(x,y)
             
             if (y % 2 == 0):
                 x = x*apothem*2 + apothem
@@ -156,6 +158,8 @@ def main():
     
     ex.addHexagon(e,1,4)
     ex.addHexagon(e,1,5)
+    
+    ex.addHexagon(e,-2,8)
     
     ex.show()
     sys.exit(app.exec_())
