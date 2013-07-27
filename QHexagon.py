@@ -32,14 +32,20 @@ class Hexagon(object):
     They can be added/removed to the QHexagon widget.
     '''
     def __init__(self):
-        self.bgcolor = 0xB00000
+        self.bgcolor = 0xFFFFFF
+        self.fgcolor = 0xFFFFFF
         pass
     
-    def getQColorbg(self):
-        r = (self.bgcolor & 0xFF0000) >> 16
-        g = (self.bgcolor & 0x00FF00) >> 8
-        b = self.bgcolor & 0x0000FF
+    def _colorToQColor(self,c):
+        r = (c & 0xFF0000) >> 16
+        g = (c & 0x00FF00) >> 8
+        b = c & 0x0000FF
         return QtGui.QColor(r,g,b)
+    
+    def getQColorbg(self):
+        return self._colorToQColor(self.bgcolor)
+    def getQColorfg(self):
+        return self._colorToQColor(self.fgcolor)
 
 class QHexagon(QtGui.QGraphicsView):
     
@@ -50,6 +56,8 @@ class QHexagon(QtGui.QGraphicsView):
         
         self.scene = QtGui.QGraphicsScene()
         
+        self.setRenderHints( QtGui.QPainter.Antialiasing );
+        
         self.setScene(self.scene)
         
         self.hexagons = {}
@@ -59,6 +67,10 @@ class QHexagon(QtGui.QGraphicsView):
         
         self.voffset = 0
         self.hoffset = 0
+        
+        self.manual_zoom = False
+        
+        self.repaint()
         
     def _find_max_offset(self):
         
@@ -106,6 +118,7 @@ class QHexagon(QtGui.QGraphicsView):
         pass
     
     def mousePressEvent(self,ev):
+        print int(ev.buttons())
         item = self.itemAt(ev.x(),ev.y())
         if item is None:
             return
@@ -115,19 +128,41 @@ class QHexagon(QtGui.QGraphicsView):
         self.clicked.emit(x,y)
     
     def wheelEvent(self,ev):
-        pass
+        #Zoom
+        if int(ev.modifiers()) == QtCore.Qt.ControlModifier:
+            self.radius += ev.delta()/100
+            self.manual_zoom = True
+            self.repaint()
+            
+            return
+        
+        #Scroll
+        
+        if ev.orientation() == QtCore.Qt.Vertical:
+            v = self.verticalScrollBar()
+            if v.maximum() != v.minimum():
+                v.setValue(v.value() - ev.delta()/20)
+        else:
+            v = self.horizontalScrollBar()
+            if v.maximum() != v.minimum():
+                v.setValue(v.value() - ev.delta()/20)
+
+        
 
     def repaint(self):
         
         map(self.scene.removeItem,self.scene.items())
         
-        #TODO qp.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
-        
         # Deciding zoom
         hradius = self.size().width() / (self.hmax * 10.0 / 11.0)
         vradius = self.size().height() / (self.vmax * 6.0 / 7.0)
         
-        radius = float(min(hradius,vradius))/2
+        if not self.manual_zoom:
+            radius = float(min(hradius,vradius))/2
+            self.radius = radius
+        else:
+            radius = self.radius
+        
         apothem = math.sqrt(radius**2 - ((radius/2)**2))
         sside = math.sqrt((radius**2) - ( (apothem) **2))
         
@@ -135,32 +170,37 @@ class QHexagon(QtGui.QGraphicsView):
         #color = QtGui.QColor(212, 212, 212)
         #qp.setPen(color)
         
-        for i in self.hexagons.keys():
-            x,y=i
-            x+=self.hoffset
-            y+=self.voffset
-            
-            
-            hexagon = self.hexagons[i]
-
-            brush = QtGui.QBrush(hexagon.getQColorbg())
-            
-            if (y % 2 == 0):
-                x = x*apothem*2 + apothem
-                y = y*radius*2 + radius - ((y/2)*radius)
-            else:
-                x = x*apothem*2 + apothem*2
+        for j in xrange(-self.hoffset -1, self.hmax+4):
+            for k in xrange(-self.voffset -1, self.vmax+2):
                 
-                y = y*radius*2+sside - ((y/2)*radius)
+                i=(j,k)
+                
+                x,y=i
+                x+=self.hoffset
+                y+=self.voffset
             
-            x+=radius/2
-            y+=radius/2
-            h = self.hexagon(x,y,radius)
+                if i in self.hexagons:
+                    hexagon = self.hexagons[i]
+                else:
+                    hexagon = Hexagon()
+
+                brush = QtGui.QBrush(hexagon.getQColorbg())
+                pen = QtGui.QPen(hexagon.getQColorfg())
             
-            color = QtGui.QColor(0, 0, 0)
-            item = self.scene.addPolygon(QtGui.QPolygonF(h),QtGui.QPen(color),brush)
-            item.setData(0,i[0])
-            item.setData(1,i[1])
+                if (y % 2 == 0):
+                    x = x*apothem*2 + apothem
+                    y = y*radius*2 + radius - ((y/2)*radius)
+                else:
+                    x = x*apothem*2 + apothem*2
+                    y = y*radius*2+sside - ((y/2)*radius)
+            
+                x+=radius/2
+                y+=radius/2
+                h = self.hexagon(x,y,radius)
+            
+                item = self.scene.addPolygon(QtGui.QPolygonF(h),pen,brush)
+                item.setData(0,i[0])
+                item.setData(1,i[1])
             
         
         
@@ -168,6 +208,7 @@ def main():
     
     
     e = Hexagon()
+    e.bgcolor = 0xDA0000
     g = Hexagon()
     g.bgcolor = 0xFFFFFF
     
