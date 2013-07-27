@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # QHexagon
@@ -41,13 +41,16 @@ class Hexagon(object):
         b = self.bgcolor & 0x0000FF
         return QtGui.QColor(r,g,b)
 
-
-class QHexagon(QtGui.QWidget):
+class QHexagon(QtGui.QGraphicsView):
     
     clicked = QtCore.pyqtSignal(int,int, name='clicked')
     
-    def __init__(self):
+    def __init__(self):        
         super(QHexagon, self).__init__()
+        
+        self.scene = QtGui.QGraphicsScene()
+        
+        self.setScene(self.scene)
         
         self.hexagons = {}
         
@@ -68,17 +71,20 @@ class QHexagon(QtGui.QWidget):
         self.hmax = abs(maxx-minx)+1
         self.vmax = abs(maxy-miny)+1
         
-        print(minx,miny)
-        
         self.hoffset = -minx
         self.voffset = -miny
         
     def addHexagon(self,h,x,y):
         self.hexagons[(x,y)] = h
         self._find_max_offset()
+        
+        self.repaint()
+        
     def delHexagon(self,x,y):
         del self.hexagons[(x,y)]
         self._find_max_offset()
+        
+        self.repaint()
     
     def hexagon(self,x,y,r):
         '''
@@ -96,15 +102,26 @@ class QHexagon(QtGui.QWidget):
         
         return QtGui.QPolygon(p)
     
+    def _find_center(self,pos):
+        pass
+    
     def mousePressEvent(self,ev):
-        #self.clicked.emit(x,y)
-        print (ev.x(),ev.y())
+        item = self.itemAt(ev.x(),ev.y())
+        if item is None:
+            return
+        x = (item.data(0).toInt())[0]
+        y = (item.data(1).toInt())[0]
+        print(x,y)
+        self.clicked.emit(x,y)
+    
+    def wheelEvent(self,ev):
+        pass
 
-    def paintEvent(self, e):
-        qp = QtGui.QPainter()
+    def repaint(self):
         
-        qp.begin(self)
-        qp.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
+        map(self.scene.removeItem,self.scene.items())
+        
+        #TODO qp.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
         
         # Deciding zoom
         hradius = self.size().width() / (self.hmax * 10.0 / 11.0)
@@ -126,7 +143,7 @@ class QHexagon(QtGui.QWidget):
             
             hexagon = self.hexagons[i]
 
-            qp.setBrush(hexagon.getQColorbg())
+            brush = QtGui.QBrush(hexagon.getQColorbg())
             
             if (y % 2 == 0):
                 x = x*apothem*2 + apothem
@@ -139,9 +156,12 @@ class QHexagon(QtGui.QWidget):
             x+=radius/2
             y+=radius/2
             h = self.hexagon(x,y,radius)
-            qp.drawPolygon(h)
             
-        qp.end()
+            color = QtGui.QColor(0, 0, 0)
+            item = self.scene.addPolygon(QtGui.QPolygonF(h),QtGui.QPen(color),brush)
+            item.setData(0,i[0])
+            item.setData(1,i[1])
+            
         
         
 def main():
