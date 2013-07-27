@@ -68,10 +68,10 @@ class QHexagon(QtGui.QWidget):
         self.hmax = abs(maxx-minx)+1
         self.vmax = abs(maxy-miny)+1
         
-        if minx < 0:
-            self.hoffset = -minx
-        if miny < 0:
-            self.voffset = -miny
+        print(minx,miny)
+        
+        self.hoffset = -minx
+        self.voffset = -miny
         
     def addHexagon(self,h,x,y):
         self.hexagons[(x,y)] = h
@@ -154,20 +154,20 @@ def main():
     app = QtGui.QApplication(sys.argv)
     ex = QHexagon()
     
-    ex.addHexagon(e,0,0)
-    ex.addHexagon(e,1,0)
-    ex.addHexagon(e,0,1)
-    ex.addHexagon(e,1,1)
-    ex.addHexagon(e,2,1)
+    ex.addHexagon(e,3,5)
+    ex.addHexagon(e,9,0)
+    ex.addHexagon(e,9,1)
+    ex.addHexagon(e,9,1)
+    ex.addHexagon(e,10,1)
     
-    ex.addHexagon(e,0,2)
-    ex.addHexagon(e,1,2)
+    ex.addHexagon(e,9,2)
+    ex.addHexagon(e,11,2)
     
-    ex.addHexagon(e,0,3)
-    ex.addHexagon(e,1,3)
+    ex.addHexagon(e,10,3)
+    ex.addHexagon(e,9,3)
     
-    ex.addHexagon(e,1,4)
-    ex.addHexagon(e,1,5)
+    ex.addHexagon(e,9,4)
+    ex.addHexagon(e,9,5)
     
     ex.addHexagon(g,3,0)
     
