@@ -118,14 +118,21 @@ class QHexagon(QtGui.QGraphicsView):
         pass
     
     def mousePressEvent(self,ev):
-        print int(ev.buttons())
-        item = self.itemAt(ev.x(),ev.y())
-        if item is None:
-            return
-        x = (item.data(0).toInt())[0]
-        y = (item.data(1).toInt())[0]
-        print(x,y)
-        self.clicked.emit(x,y)
+        buttons = int(ev.buttons())
+        print buttons
+        
+        
+        if buttons  == QtCore.Qt.LeftButton:
+            item = self.itemAt(ev.x(),ev.y())
+            if item is None:
+                return
+            x = (item.data(0).toInt())[0]
+            y = (item.data(1).toInt())[0]
+            print(x,y)
+            self.clicked.emit(x,y)
+        elif buttons == QtCore.Qt.MidButton:
+            self.manual_zoom = False
+            self.repaint()
     
     def wheelEvent(self,ev):
         #Zoom
@@ -154,10 +161,10 @@ class QHexagon(QtGui.QGraphicsView):
         map(self.scene.removeItem,self.scene.items())
         
         # Deciding zoom
-        hradius = self.size().width() / (self.hmax * 10.0 / 11.0)
-        vradius = self.size().height() / (self.vmax * 6.0 / 7.0)
-        
         if not self.manual_zoom:
+            hradius = self.size().width() / (self.hmax * 10.0 / 11.0)
+            vradius = self.size().height() / (self.vmax * 6.0 / 7.0)
+            
             radius = float(min(hradius,vradius))/2
             self.radius = radius
         else:
