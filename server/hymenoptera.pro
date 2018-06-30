@@ -19,4 +19,5 @@ SOURCES += \
     board.cpp
 
 HEADERS += \
-    board.h
+    board.h \
+    definitions.h
