@@ -22,8 +22,11 @@
 #define BOARD_H
 
 #include <QObject>
+#include <QList>
 
 #include "definitions.h"
+
+class Pedina;
 
 class Board : public QObject
 {
@@ -33,15 +36,18 @@ public:
 
     Q_PROPERTY(unsigned int move_counter READ move_counter NOTIFY move_counterChanged)
     Q_PROPERTY(player_t turn READ turn NOTIFY turnChanged)
-    Q_PROPERTY(bool beePlayed READ bee_played NOTIFY bee_playedChanged)
+
+    void printBoard();
 public slots:
     player_t turn();
     unsigned int move_counter();
     bool bee_played(player_t);
 private:
+    QList<Pedina*> pedine;
     unsigned int _move_counter = 0;
     player_t _turn = WHITE;
     bool _bee_in_play[2] = {false, false};
+    void addInsect(insect_t insect, unsigned int count);
 private slots:
     void setBeePlayed(player_t);
 

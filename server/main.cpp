@@ -20,9 +20,11 @@
 
 #include <QCoreApplication>
 
+#include "board.h"
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-
-    return a.exec();
+    Board b;
+    b.printBoard();
+//    return a.exec();
 }

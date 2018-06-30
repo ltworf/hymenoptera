@@ -18,12 +18,27 @@
  * author Salvo "LtWorf" Tomaselli <tiposchi@tiscali.it>
  */
 
+#include <iostream>
 
 #include "board.h"
+#include "pedina.h"
 
-Board::Board(QObject *parent) : QObject(parent)
-{
 
+void Board::addInsect(insect_t insect, unsigned int count) {
+    while (count--) {
+        this->pedine.append(new Pedina(this, WHITE, insect));
+        this->pedine.append(new Pedina(this, BLACK, insect));
+    }
+}
+
+Board::Board(QObject *parent) : QObject(parent) {
+    // Base game
+    this->addInsect(BEE, 1);
+    this->addInsect(SPIDER, 2);
+    this->addInsect(ANT, 3);
+    this->addInsect(GRASSHOPPER, 3);
+    this->addInsect(BEETLE, 2);
+    //TODO extensions
 }
 
 player_t Board::turn() {
@@ -54,4 +69,33 @@ void Board::setBeePlayed(player_t player) {
         break;
     }
     emit bee_playedChanged(player);
+}
+
+void Board::printBoard() {
+    const char* invert = "\e[7m";
+    const char* reset = "\e[0m";
+
+    //Unplaced for player 1
+    std::cout << invert << "Player 1" << "\n";
+
+    for (int i = 0; i < pedine.size(); i++) {
+        Pedina* p = pedine[i];
+        if (!p->placed() && p->player() == WHITE)
+            std::cout << p->symbol().toStdString();
+    }
+    std::cout << "\n";
+    std::cout << reset;
+
+    //Board
+    //TODO
+
+    //Unplaced for player 2
+    std::cout << "Player 2" << "\n";
+
+    for (int i = 0; i < pedine.size(); i++) {
+        Pedina* p = pedine[i];
+        if (!p->placed() && p->player() == BLACK)
+            std::cout << p->symbol().toStdString();
+    }
+    std::cout << "\n";
 }
