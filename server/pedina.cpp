@@ -21,6 +21,33 @@
 #include "pedina.h"
 
 Pedina::Pedina(Board *board, player_t player, insect_t insect): QObject(board) {
-    this->player = player;
-    this->insect = insect;
+    this->_player = player;
+    this->_insect = insect;
+}
+
+
+player_t Pedina::player() {
+    return this->_player;
+}
+
+insect_t Pedina::insect() {
+    return this->_insect;
+}
+
+bool Pedina::placed() {
+    return this->_placed;
+}
+
+QString Pedina::symbol() {
+    const char *insects[] = {
+        "🐝",
+        "🐜",
+        "🦗",
+        "🕷",
+        "🐛", //TODO find a better symbol
+        "🦋", //TODO find a better symbol
+        "🐞",
+        "🦂", //TODO find a better symbol
+    };
+    return QString(insects[this->_insect]);
 }

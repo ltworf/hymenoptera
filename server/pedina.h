@@ -22,6 +22,7 @@
 #define PEDINA_H
 
 #include <QObject>
+#include <QString>
 
 #include "board.h"
 #include "definitions.h"
@@ -31,12 +32,18 @@ class Pedina : public QObject
     Q_OBJECT
 public:
     explicit Pedina(Board *board, player_t player, insect_t insect);
-
+public slots:
+    player_t player();
+    insect_t insect();
+    QString symbol();
+    bool placed();
 private:
-    player_t player;
-    insect_t insect;
+    player_t _player;
+    insect_t _insect;
+    bool _placed = false;
 
 signals:
+    void placedChanged(bool);
 
 public slots:
 };
