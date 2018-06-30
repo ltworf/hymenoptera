@@ -16,8 +16,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    board.cpp
+    board.cpp \
+    pedina.cpp
 
 HEADERS += \
     board.h \
-    definitions.h
+    definitions.h \
+    pedina.h

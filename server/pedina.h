@@ -18,38 +18,27 @@
  * author Salvo "LtWorf" Tomaselli <tiposchi@tiscali.it>
  */
 
-#ifndef BOARD_H
-#define BOARD_H
+#ifndef PEDINA_H
+#define PEDINA_H
 
 #include <QObject>
 
+#include "board.h"
 #include "definitions.h"
 
-class Board : public QObject
+class Pedina : public QObject
 {
     Q_OBJECT
 public:
-    explicit Board(QObject *parent = nullptr);
+    explicit Pedina(Board *board, player_t player, insect_t insect);
 
-    Q_PROPERTY(unsigned int move_counter READ move_counter NOTIFY move_counterChanged)
-    Q_PROPERTY(player_t turn READ turn NOTIFY turnChanged)
-    Q_PROPERTY(bool beePlayed READ bee_played NOTIFY bee_playedChanged)
-public slots:
-    player_t turn();
-    unsigned int move_counter();
-    bool bee_played(player_t);
 private:
-    unsigned int _move_counter = 0;
-    player_t _turn = WHITE;
-    bool _bee_in_play[2] = {false, false};
-private slots:
-    void setBeePlayed(player_t);
+    player_t player;
+    insect_t insect;
 
 signals:
-    void turnChanged(player_t);
-    void move_counterChanged(unsigned int);
-    void bee_playedChanged(player_t);
 
+public slots:
 };
 
-#endif // BOARD_H
+#endif // PEDINA_H

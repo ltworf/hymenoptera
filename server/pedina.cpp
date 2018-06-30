@@ -18,40 +18,9 @@
  * author Salvo "LtWorf" Tomaselli <tiposchi@tiscali.it>
  */
 
+#include "pedina.h"
 
-#include "board.h"
-
-Board::Board(QObject *parent) : QObject(parent)
-{
-
-}
-
-player_t Board::turn() {
-    return this->_turn;
-}
-
-unsigned int Board::move_counter() {
-    return this->_move_counter;
-}
-
-bool Board::bee_played(player_t player) {
-    switch (player) {
-    case WHITE:
-        return this->_bee_in_play[0];
-    case BLACK:
-    default:
-        return this->_bee_in_play[1];
-    }
-}
-
-void Board::setBeePlayed(player_t player) {
-    switch (player) {
-    case WHITE:
-        this->_bee_in_play[0] = true;
-        break;
-    case BLACK:
-        this->_bee_in_play[1] = true;
-        break;
-    }
-    emit bee_playedChanged(player);
+Pedina::Pedina(Board *board, player_t player, insect_t insect): QObject(board) {
+    this->player = player;
+    this->insect = insect;
 }
